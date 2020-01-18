@@ -1,0 +1,2 @@
+quart
+git+git://github.com/Xaroth/libottdadmin2.git@master
