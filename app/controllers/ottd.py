@@ -103,3 +103,5 @@ class OpenTTDConnection:
             db.session.add(company_model)
 
         db.session.commit()
+
+        return self.client.current_date.date

@@ -10,15 +10,15 @@ import atexit
 from flask import Flask
 
 POOL_TIME = 5  # Seconds
+TIMESCALE_POOL_TIME = 10
 
-# variables that are accessible from anywhere
-commonDataStruct = {}
-# lock to control access to variable
+
 dataLock = threading.Lock()
-# thread handler
-yourThread = threading.Thread()
+connection_thread = threading.Thread()
+timescale_updater_thread = threading.Thread()
 
 ottd_connection = None
+current_date = None
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -27,39 +27,61 @@ ma = Marshmallow(app)
 api = Api(app)
 migrate = Migrate(app, db)
 
-from app.controllers.ottd import OpenTTDConnection # noqa
+from app.controllers.ottd import OpenTTDConnection  # noqa
+from app.controllers.company import CompanyTimescaleController  # noqa
+
 
 def interrupt():
-    global yourThread
-    yourThread.cancel()
+    global connection_thread
+    connection_thread.cancel()
 
 
-def doStuff():
-    global commonDataStruct
-    global yourThread
+def do_connection_thread():
+    global connection_thread
     global ottd_connection
+    global current_date
     with dataLock:
         # Do your stuff with commonDataStruct Here
         ottd_connection.req_data()
-        ottd_connection.sync_data()
+        current_date = ottd_connection.sync_data()()
+        print(current_date)
 
     # Set the next thread to happen
-    yourThread = threading.Timer(POOL_TIME, doStuff, ())
-    yourThread.start()
+    connection_thread = threading.Timer(POOL_TIME, do_connection_thread, ())
+    connection_thread.start()
 
 
-def doStuffStart():
+def start_connection_thread():
     # Do initialisation stuff here
-    global yourThread
+    global connection_thread
     global ottd_connection
     # Create your thread
-    yourThread = threading.Timer(POOL_TIME, doStuff, ())
+    connection_thread = threading.Timer(POOL_TIME, do_connection_thread, ())
     ottd_connection = OpenTTDConnection()
-    yourThread.start()
+    connection_thread.start()
+
+
+def start_timescale_thread():
+    global timescale_updater_thread
+    timescale_updater_thread = threading.Timer(
+        TIMESCALE_POOL_TIME, do_timescale_thread, ()
+    )
+    timescale_updater_thread.start()
+
+
+def do_timescale_thread():
+    global timescale_updater_thread
+    global current_date
+    CompanyTimescaleController.capture_data(current_date)
+    timescale_updater_thread = threading.Timer(
+        TIMESCALE_POOL_TIME, do_timescale_thread, ()
+    )
+    timescale_updater_thread.start()
 
 
 # Initiate
-doStuffStart()
+start_connection_thread()
+start_timescale_thread()
 # When you kill Flask (SIGTERM), clear the trigger for the next thread
 atexit.register(interrupt)
 
