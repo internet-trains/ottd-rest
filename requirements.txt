@@ -5,5 +5,8 @@ flask-marshmallow
 flask-sqlalchemy
 sqlalchemy
 marshmallow_enum
-marshmallow-dataclass
-marshmallow-annotations
+# marshmallow-dataclass
+# marshmallow-annotations
+flask-smorest
+Flask-Migrate
+marshmallow-sqlalchemy
