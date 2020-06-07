@@ -8,6 +8,7 @@ from libottdadmin2.packets.admin import (
     AdminGamescript,
 )
 
+from logging import warning
 from app import db
 from config import config
 from app.models.town import Town
@@ -43,8 +44,11 @@ class Client(TrackingMixIn, OttdSocket):
 
     def on_server_gamescript_raw(self, packet, data):
         mailbox_id = data.json_data["number"]
-        self.mailbox[mailbox_id]["result"] = data.json_data["result"]
-        self.mailbox[mailbox_id]["db_synced"] = False
+        if mailbox_id in self.mailbox:
+            self.mailbox[mailbox_id]["result"] = data.json_data["result"]
+            self.mailbox[mailbox_id]["db_synced"] = False
+        else:
+            warning(f"Message with unknown mailbox_id{mailbox_id}")
 
     def send_admin_gamescript(self, method, args=[], action="call", company_mode=None):
         mailbox_id = self.get_mailbox()

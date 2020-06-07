@@ -44,7 +44,7 @@ def register(vehicle_id):
     vehicle = Vehicle(id=vehicle_id)
     db.session.add(vehicle)
     db.session.commit()
-    mailboxes = VehicleController.update_by_id(vehicle_id)
+    mailboxes = VehicleController.update_by_id(ottd_connection, vehicle_id)
 
     return {"status": True, "mailboxes": mailboxes}, HTTPStatus.OK
 
@@ -58,7 +58,7 @@ def update(vehicle_id):
     :return:
     """
     vehicle = Vehicle.query.filter(Vehicle.id == vehicle_id).first_or_404()
-    mailboxes = VehicleController.update_by_id(vehicle_id)
+    mailboxes = VehicleController.update_by_id(ottd_connection, vehicle_id)
     return {"status": True, "mailboxes": mailboxes}, HTTPStatus.OK
 
 
