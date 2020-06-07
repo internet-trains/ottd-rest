@@ -1,6 +1,6 @@
 from sqlalchemy.ext.declarative import declared_attr
 
-from app import db
+from app import db, ma
 
 
 class TimeScaleMixin:
@@ -51,6 +51,20 @@ class TimeScaleMixin:
             )
 
         return TimeScaleStat
+
+    @declared_attr
+    def asc_timescale_frames(cls):
+        return db.relationship(cls.timescale_type)
+
+    @declared_attr
+    def timescale_schema(cls):
+        class TimeScaleSchema(ma.SQLAlchemyAutoSchema):
+            class Meta:
+                model = cls.timescale_type
+                include_fk = True
+
+
+        return type(f"{cls.__tablename__.capitalize()}TimeScaleSchema", (TimeScaleSchema,), {})
 
     def timescale_data_upsert(self, model_id, timestamp, commit=True, **kwargs):
         found_ts = self.timescale_type.query.filter_by(getattr(self, self._timescale_table_fk_name) == model_id, self.timestamp == timestamp).first()

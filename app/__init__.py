@@ -7,6 +7,7 @@ from flask_smorest import Api
 
 import threading
 import atexit
+import sys
 from flask import Flask
 
 POOL_TIME = 5  # Seconds
@@ -78,14 +79,17 @@ def do_timescale_thread():
     )
     timescale_updater_thread.start()
 
+# Only run tasks if flask is being run.
+flask = "flask/__main__.py"
 
-# Initiate
-start_connection_thread()
-start_timescale_thread()
-# When you kill Flask (SIGTERM), clear the trigger for the next thread
-atexit.register(interrupt)
+if sys.argv[0][-len(flask):] == flask and sys.argv[1] == 'run':
+    # Initiate
+    start_connection_thread()
+    start_timescale_thread()
+    # When you kill Flask (SIGTERM), clear the trigger for the next thread
+    atexit.register(interrupt)
 
 
 from app import routes, models
 
-routes.register_routes(app)
+routes.register_routes(app, api)

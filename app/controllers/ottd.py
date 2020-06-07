@@ -1,24 +1,20 @@
 from libottdadmin2.client.tracking import TrackingMixIn
-from libottdadmin2.client.asyncio import OttdAdminProtocol
-from libottdadmin2.constants import NETWORK_ADMIN_PORT
-from libottdadmin2.enums import ChatAction, DestType, UpdateType, UpdateFrequency
+from libottdadmin2.enums import \
+    UpdateType, UpdateFrequency
 from libottdadmin2.client.sync import OttdSocket, DefaultSelector
 from libottdadmin2.packets.admin import (
-    AdminChat,
     AdminPoll,
     AdminUpdateFrequency,
     PollExtra,
-    AdminGamescript,
 )
-from libottdadmin2.packets import Packet
 
 from app import db
+from config import config
 from app.models.company import Company
 
-host = "127.0.0.1"
-port = NETWORK_ADMIN_PORT
-password = "password"
-
+host = config.OTTD_GS_HOST
+port = config.OTTD_GS_PORT
+password = config.OTTD_GS_PASSWORD
 
 class Client(TrackingMixIn, OttdSocket):
     pass
