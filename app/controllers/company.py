@@ -1,4 +1,4 @@
-from datetime import datetime,date
+from datetime import datetime, date
 from app import db
 from app.models.company import Company
 
@@ -6,7 +6,7 @@ from app.models.company import Company
 class CompanyTimescaleController:
     @classmethod
     def capture_data(cls, current_date):
-        if not current_date or current_date < date(1000,1,1):
+        if not current_date or current_date < date(1000, 1, 1):
             return
 
         companies = Company.query.all()
@@ -16,14 +16,19 @@ class CompanyTimescaleController:
                 continue
 
             last_ts = (
-                company.timescale_type().query.filter_by(company_id=company.id)
+                company.timescale_type()
+                .query.filter_by(company_id=company.id)
                 .order_by(company.timescale_type.timestamp.desc())
                 .first()
             )
 
             if last_ts:
                 if last_ts.timestamp.date() > current_date:
-                    old_data = company.timescale_type.query.filter_by(company_id=company.id).filter(company.timescale_type.timestamp>current_date).all()
+                    old_data = (
+                        company.timescale_type.query.filter_by(company_id=company.id)
+                        .filter(company.timescale_type.timestamp > current_date)
+                        .all()
+                    )
                     for data in old_data:
                         db.session.delete(data)
                 db.session.commit()

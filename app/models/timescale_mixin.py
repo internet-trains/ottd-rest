@@ -64,11 +64,15 @@ class TimeScaleMixin:
                 model = cls.timescale_type
                 include_fk = True
 
-
-        return type(f"{cls.__tablename__.capitalize()}TimeScaleSchema", (TimeScaleSchema,), {})
+        return type(
+            f"{cls.__tablename__.capitalize()}TimeScaleSchema", (TimeScaleSchema,), {}
+        )
 
     def timescale_data_upsert(self, model_id, timestamp, commit=True, **kwargs):
-        found_ts = self.timescale_type.query.filter_by(getattr(self, self._timescale_table_fk_name) == model_id, self.timestamp == timestamp).first()
+        found_ts = self.timescale_type.query.filter_by(
+            getattr(self, self._timescale_table_fk_name) == model_id,
+            self.timestamp == timestamp,
+        ).first()
         if not found_ts:
             found_ts = self.timescale_type()
 
@@ -80,7 +84,8 @@ class TimeScaleMixin:
         if commit:
             db.session.commit(found_ts)
 
+
 class TimeScaleRequestSchema(ma.Schema):
-    start = fields.Date(description='Start Date')
-    end = fields.Date(description='End Date')
-    sampling = fields.Str(description='Granularity of data')
+    start = fields.Date(description="Start Date")
+    end = fields.Date(description="End Date")
+    sampling = fields.Str(description="Granularity of data")

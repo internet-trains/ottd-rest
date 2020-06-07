@@ -4,12 +4,11 @@ from app.models.timescale_mixin import TimeScaleMixin
 
 class Vehicle(db.Model, TimeScaleMixin):
     timescale_table_value_columns = [
-        'running_cost',
-        'profit_this_year',
-        'value',
-        'reliability'
+        "running_cost",
+        "profit_this_year",
+        "value",
+        "reliability",
     ]
-
 
     id = db.Column(db.Integer, primary_key=True)
     type = db.Column(db.String(10))
@@ -43,23 +42,23 @@ class Vehicle(db.Model, TimeScaleMixin):
         # "GSVehicle.GetLocation": 'location',
         # "GSVehicle.GetEngineType",
         # "GSVehicle.GetUnitNumber",
-        "GSVehicle.GetNumWagons": 'num_wagons',
-        "GSVehicle.GetName": 'name',
-        "GSVehicle.GetAge": 'age',
-        "GSVehicle.GetMaxAge": 'max_age',
-        "GSVehicle.GetAgeLeft": 'remaining_life',
-        "GSVehicle.GetCurrentSpeed": 'speed',
-        "GSVehicle.GetState": 'state',
-        "GSVehicle.GetRunningCost": 'running_cost',
-        "GSVehicle.GetProfitThisYear": 'profit_this_year',
-        "GSVehicle.GetProfitLastYear": 'profit_last_year',
-        "GSVehicle.GetCurrentValue": 'value',
-        "GSVehicle.GetVehicleType": 'vehicle_type',
-        "GSVehicle.GetRoadType": 'road_type',
-        "GSVehicle.GetLength": 'length',
-        "GSVehicle.GetGroupID": 'group_id',
-        "GSVehicle.IsArticulated": 'isArticulated',
-        "GSVehicle.HasSharedOrders": 'hasSharedOrders',
-        "GSVehicle.GetReliability": 'reliability',
-        "GSVehicle.GetMaximumOrderDistance": 'maximum_order_distance'
+        "GSVehicle.GetNumWagons": "num_wagons",
+        "GSVehicle.GetName": "name",
+        "GSVehicle.GetAge": "age",
+        "GSVehicle.GetMaxAge": "max_age",
+        "GSVehicle.GetAgeLeft": "remaining_life",
+        "GSVehicle.GetCurrentSpeed": "speed",
+        "GSVehicle.GetState": "state",
+        "GSVehicle.GetRunningCost": "running_cost",
+        "GSVehicle.GetProfitThisYear": "profit_this_year",
+        "GSVehicle.GetProfitLastYear": "profit_last_year",
+        "GSVehicle.GetCurrentValue": "value",
+        "GSVehicle.GetVehicleType": "vehicle_type",
+        "GSVehicle.GetRoadType": "road_type",
+        "GSVehicle.GetLength": "length",
+        "GSVehicle.GetGroupID": "group_id",
+        "GSVehicle.IsArticulated": "isArticulated",
+        "GSVehicle.HasSharedOrders": "hasSharedOrders",
+        "GSVehicle.GetReliability": "reliability",
+        "GSVehicle.GetMaximumOrderDistance": "maximum_order_distance",
     }

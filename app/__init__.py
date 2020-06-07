@@ -18,7 +18,7 @@ dataLock = threading.Lock()
 connection_thread = threading.Thread()
 timescale_updater_thread = threading.Thread()
 
-ottd_connection = None # type: OpenTTDConnection
+ottd_connection = None  # type: OpenTTDConnection
 current_date = None
 month_last_update = None
 year_last_update = None
@@ -33,6 +33,7 @@ migrate = Migrate(app, db)
 from app.controllers.ottd import OpenTTDConnection  # noqa
 from app.controllers.company import CompanyTimescaleController  # noqa
 from app.controllers.vehicle import VehicleTimescaleController, VehicleController
+from app.controllers.town import TownController
 
 
 def interrupt():
@@ -55,12 +56,14 @@ def do_connection_thread():
         current_date = ottd_connection.sync_data()()
         if month_last_update != current_date.month:
             # Trigger Vehicle Sync
-            info(f' [ New Month {current_date.year}-{current_date.month} ]')
-            info(f' [ Requesting Train Updates ] ')
-            VehicleController.trigger_sync_tasks(ottd_connection)
+            info(f" [ New Month {current_date.year}-{current_date.month} ]")
+            info(f" [ Requesting City Updates ] ")
+            # VehicleController.trigger_sync_tasks(ottd_connection)
+            ottd_connection.refresh_db_vehicles()
+            ottd_connection.refresh_db_towns()
             month_last_update = current_date.month
         if year_last_update != current_date.year:
-            info(f' [ New Year {current_date.year} ] ')
+            info(f" [ New Year {current_date.year} ] ")
             year_last_update = current_date.year
 
     # Set the next thread to happen
@@ -75,6 +78,9 @@ def start_connection_thread():
     # Create your thread
     connection_thread = threading.Timer(POOL_TIME, do_connection_thread, ())
     ottd_connection = OpenTTDConnection()
+    # ottd_connection.scan_vehicles(20)
+    info(f" [ Start Town Scan ]")
+    ottd_connection.schedule_next_town_scan_batch(0, 10)
     connection_thread.start()
 
 
@@ -96,10 +102,11 @@ def do_timescale_thread():
     )
     timescale_updater_thread.start()
 
+
 # Only run tasks if flask is being run.
 flask = "flask/__main__.py"
 
-if sys.argv[0][-len(flask):] == flask and sys.argv[1] == 'run':
+if sys.argv[0][-len(flask) :] == flask and sys.argv[1] == "run":
     # Initiate
     start_connection_thread()
     start_timescale_thread()
