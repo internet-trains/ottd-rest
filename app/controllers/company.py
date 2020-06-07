@@ -22,6 +22,12 @@ class CompanyTimescaleController:
             )
 
             if last_ts:
+                if last_ts.timestamp.date() > current_date:
+                    old_data = company.timescale_type.query.filter_by(company_id=company.id).filter(company.timescale_type.timestamp>current_date).all()
+                    for data in old_data:
+                        db.session.delete(data)
+                db.session.commit()
+
                 if last_ts.timestamp.date() == current_date:
                     return
 
@@ -32,8 +38,6 @@ class CompanyTimescaleController:
             new_ts_item = cls.gen_ts_item(company, timestamp=current_date)
             db.session.add(new_ts_item)
             db.session.commit()
-
-        print("CAPPIN")
 
     @classmethod
     def gen_ts_item(cls, company, timestamp):

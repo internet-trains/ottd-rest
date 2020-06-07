@@ -1,5 +1,10 @@
 # ottd-rest
-Simple OpenTTD GameScript HTTP Binding with a Flask Microservice.
+Simple OpenTTD GameScript HTTP Binding and Game Logger with a Flask Microservice.
+
+Have you ever found OpenTTD's in-game stats to be insufficient and inaccessible? 
+This piece of software aims to fix that. 
+Stats are collected continuously, and saved to a database of your choice. 
+Stats are are also accessible via HTTP endpoints.
 
 ## Installation
 ### Prerequisites

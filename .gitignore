@@ -1,3 +1,4 @@
 *.pyc
 *.pyo
 /api.json
+app.db

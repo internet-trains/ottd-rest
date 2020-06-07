@@ -5,6 +5,7 @@ from flask_migrate import Migrate
 from flask_marshmallow import Marshmallow
 from flask_smorest import Api
 
+from logging import info
 import threading
 import atexit
 import sys
@@ -13,13 +14,14 @@ from flask import Flask
 POOL_TIME = 1  # Seconds
 TIMESCALE_POOL_TIME = 1
 
-
 dataLock = threading.Lock()
 connection_thread = threading.Thread()
 timescale_updater_thread = threading.Thread()
 
-ottd_connection = None
+ottd_connection = None # type: OpenTTDConnection
 current_date = None
+month_last_update = None
+year_last_update = None
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -30,22 +32,36 @@ migrate = Migrate(app, db)
 
 from app.controllers.ottd import OpenTTDConnection  # noqa
 from app.controllers.company import CompanyTimescaleController  # noqa
+from app.controllers.vehicle import VehicleTimescaleController, VehicleController
 
 
 def interrupt():
     global connection_thread
+    global timescale_updater_thread
     connection_thread.cancel()
+    timescale_updater_thread.cancel()
 
 
 def do_connection_thread():
     global connection_thread
     global ottd_connection
     global current_date
+    global month_last_update
+    global year_last_update
+
     with dataLock:
         # Do your stuff with commonDataStruct Here
         ottd_connection.req_data()
         current_date = ottd_connection.sync_data()()
-        print(current_date)
+        if month_last_update != current_date.month:
+            # Trigger Vehicle Sync
+            info(f' [ New Month {current_date.year}-{current_date.month} ]')
+            info(f' [ Requesting Train Updates ] ')
+            VehicleController.trigger_sync_tasks(ottd_connection)
+            month_last_update = current_date.month
+        if year_last_update != current_date.year:
+            info(f' [ New Year {current_date.year} ] ')
+            year_last_update = current_date.year
 
     # Set the next thread to happen
     connection_thread = threading.Timer(POOL_TIME, do_connection_thread, ())
@@ -74,6 +90,7 @@ def do_timescale_thread():
     global timescale_updater_thread
     global current_date
     CompanyTimescaleController.capture_data(current_date)
+    VehicleTimescaleController.capture_data(current_date)
     timescale_updater_thread = threading.Timer(
         TIMESCALE_POOL_TIME, do_timescale_thread, ()
     )

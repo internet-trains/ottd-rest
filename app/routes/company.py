@@ -5,7 +5,7 @@ from app.models.company import Company
 from app.models.timescale_mixin import TimeScaleRequestSchema
 from app.schemas.company import CompanySchema
 
-company_routes = Blueprint("", __name__, url_prefix="/company", description="Routes for getting company data.")
+company_routes = Blueprint("Company", __name__, url_prefix="/company", description="Routes for getting company data.")
 
 
 @company_routes.route("/", methods=["GET"])
