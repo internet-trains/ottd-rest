@@ -1,5 +1,5 @@
 # ottd-rest
-Simple OpenTTD GameScript HTTP Binding with a Quart Microservice.
+Simple OpenTTD GameScript HTTP Binding with a Flask Microservice.
 
 ## Installation
 ### Prerequisites
@@ -7,7 +7,7 @@ Simple OpenTTD GameScript HTTP Binding with a Quart Microservice.
 * [Latest version of ServerGS (from hg repo)](http://dev.openttdcoop.org/projects/gs-server/repository)
 * A Python 2.7 installation (for building ServerGS bindings)
 * A Python 3.7 installation (for running Quart Service)
-* A Database ([supported](https://docs.sqlalchemy.org/en/13/dialects/))
+* _(optional) A Database_ ([supported](https://docs.sqlalchemy.org/en/13/dialects/))
 ### Building ServerGS Bindings
 * Edit `gen_api_binding.py`
     * Set `openttd_path` to your openttd path (`/Users/ian/Downloads/OpenTTD-patches-jgrpp-0.34.3` for me)
@@ -34,7 +34,7 @@ python3 -m ./gen_doc.py
 ## Running
 Optional, if you wish to use something other than an SqliteDb:
 ```bash
-export SQLALCHEMY_DATABASE_URI=YOUR_DATABASE_URI
+export DATABASE_URL=YOUR_DATABASE_URI
 ```
 Then run
 ```bash

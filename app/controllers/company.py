@@ -6,7 +6,7 @@ from app.models.company import Company
 class CompanyTimescaleController:
     @classmethod
     def capture_data(cls, current_date):
-        if current_date < date(1000,1,1):
+        if not current_date or current_date < date(1000,1,1):
             return
 
         companies = Company.query.all()
@@ -20,12 +20,14 @@ class CompanyTimescaleController:
                 .order_by(company.timescale_type.timestamp.desc())
                 .first()
             )
-            if last_ts.timestamp.date() == current_date:
-                return
 
-            # Capture year end data we may have missed
-            if last_ts and last_ts.delivered < company.delivered:
-                cls.create_year_end_data(last_ts, company, current_date)
+            if last_ts:
+                if last_ts.timestamp.date() == current_date:
+                    return
+
+                # Capture year end data we may have missed
+                if last_ts and last_ts.delivered < company.delivered:
+                    cls.create_year_end_data(last_ts, company, current_date)
 
             new_ts_item = cls.gen_ts_item(company, timestamp=current_date)
             db.session.add(new_ts_item)

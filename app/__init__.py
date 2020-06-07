@@ -10,8 +10,8 @@ import atexit
 import sys
 from flask import Flask
 
-POOL_TIME = 5  # Seconds
-TIMESCALE_POOL_TIME = 10
+POOL_TIME = 1  # Seconds
+TIMESCALE_POOL_TIME = 1
 
 
 dataLock = threading.Lock()

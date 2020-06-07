@@ -1,6 +1,7 @@
 from sqlalchemy.ext.declarative import declared_attr
 
 from app import db, ma
+from marshmallow import fields
 
 
 class TimeScaleMixin:
@@ -78,3 +79,8 @@ class TimeScaleMixin:
 
         if commit:
             db.session.commit(found_ts)
+
+class TimeScaleRequestSchema(ma.Schema):
+    start = fields.Date(description='Start Date')
+    end = fields.Date(description='End Date')
+    sampling = fields.Str(description='Granularity of data')

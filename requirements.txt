@@ -1,12 +1,10 @@
-quart
 git+git://github.com/Xaroth/libottdadmin2.git@master
 marshmallow
 flask-marshmallow
 flask-sqlalchemy
 sqlalchemy
 marshmallow_enum
-# marshmallow-dataclass
-# marshmallow-annotations
 flask-smorest
 Flask-Migrate
 marshmallow-sqlalchemy
+psycopg2
