@@ -2,3 +2,4 @@
 *.pyo
 /api.json
 app.db
+.env

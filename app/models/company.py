@@ -1,4 +1,7 @@
-from app import db
+from sqlalchemy.orm import relationship
+
+from app.extensions import db
+from app.models.vehicle import Vehicle
 from app.models.timescale_mixin import TimeScaleMixin
 
 
@@ -44,6 +47,9 @@ class Company(db.Model, TimeScaleMixin):
     current_loan = db.Column(db.BigInteger, server_default="0")
     income = db.Column(db.BigInteger, server_default="0")
     delivered = db.Column(db.BigInteger, server_default="0")
+
+    ## Relationships
+    vehicles = relationship("Vehicle", back_populates="company")
 
     def __repr__(self):
         return f"<Company#{self.id} [{self.name}]>"

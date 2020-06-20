@@ -1,4 +1,4 @@
-from app import ma
+from app.extensions import ma
 from app.models.company import Company
 
 

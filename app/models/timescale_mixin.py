@@ -1,6 +1,6 @@
 from sqlalchemy.ext.declarative import declared_attr
 
-from app import db, ma
+from app.extensions import db, ma
 from marshmallow import fields
 
 
@@ -57,12 +57,12 @@ class TimeScaleMixin:
     def asc_timescale_frames(cls):
         return db.relationship(cls.timescale_type)
 
-    @declared_attr
+    @classmethod
     def timescale_schema(cls):
         class TimeScaleSchema(ma.SQLAlchemyAutoSchema):
             class Meta:
                 model = cls.timescale_type
-                include_fk = True
+                include_fk = False
 
         return type(
             f"{cls.__tablename__.capitalize()}TimeScaleSchema", (TimeScaleSchema,), {}

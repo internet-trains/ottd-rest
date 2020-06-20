@@ -38,7 +38,7 @@ def get_by_id(company_id):
 
 @company_routes.route("/timescale_data")
 @company_routes.arguments(TimeScaleRequestSchema, location="query", as_kwargs=True)
-@company_routes.response(Company.timescale_schema(many=True), code=HTTPStatus.OK)
+@company_routes.response(Company.timescale_schema()(many=True), code=HTTPStatus.OK)
 def all_companies_timescale(**kwargs):
     """
     Gets the timescale data of all companies
@@ -57,7 +57,7 @@ def all_companies_timescale(**kwargs):
 
 @company_routes.route("/<int:company_id>/timescale_data", methods=["GET"])
 @company_routes.arguments(TimeScaleRequestSchema, location="query", as_kwargs=True)
-@company_routes.response(Company.timescale_schema(many=True), code=HTTPStatus.OK)
+@company_routes.response(Company.timescale_schema()(many=True), code=HTTPStatus.OK)
 def company_timescale(company_id, **kwargs):
     """
     Gets the timescale data of one company
@@ -74,4 +74,4 @@ def company_timescale(company_id, **kwargs):
     if "end" in kwargs:
         query = query.filter(company.timescale_type.timestamp <= kwargs["end"])
 
-    return query.all(), HTTPStatus.OK
+    return query.order_by(company.timescale_type.timestamp).all(), HTTPStatus.OK

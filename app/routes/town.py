@@ -35,7 +35,7 @@ def get_by_id(town_id):
 
 @town_routes.route("/timescale_data")
 @town_routes.arguments(TimeScaleRequestSchema, location="query", as_kwargs=True)
-@town_routes.response(Town.timescale_schema(many=True), code=HTTPStatus.OK)
+@town_routes.response(Town.timescale_schema()(many=True), code=HTTPStatus.OK)
 def all_companies_timescale(**kwargs):
     """
     Gets the timescale data of all towns
@@ -54,7 +54,7 @@ def all_companies_timescale(**kwargs):
 
 @town_routes.route("/<int:town_id>/timescale_data", methods=["GET"])
 @town_routes.arguments(TimeScaleRequestSchema, location="query", as_kwargs=True)
-@town_routes.response(Town.timescale_schema(many=True), code=HTTPStatus.OK)
+@town_routes.response(Town.timescale_schema()(many=True), code=HTTPStatus.OK)
 def town_timescale(town_id, **kwargs):
     """
     Gets the timescale data of one town
@@ -71,4 +71,4 @@ def town_timescale(town_id, **kwargs):
     if "end" in kwargs:
         query = query.filter(town.timescale_type.timestamp <= kwargs["end"])
 
-    return query.all(), HTTPStatus.OK
+    return query.order_by(town.timescale_type.timestamp).all(), HTTPStatus.OK

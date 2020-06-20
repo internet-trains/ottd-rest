@@ -3,6 +3,8 @@ from libottdadmin2.constants import NETWORK_ADMIN_PORT
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
+from dotenv import load_dotenv
+load_dotenv()
 
 class Config(object):
     # ...
@@ -23,6 +25,7 @@ class Config(object):
     )
     OPENAPI_SWAGGER_UI_PATH = "/swagger-ui"
     OPENAPI_SWAGGER_UI_URL = "https://cdn.jsdelivr.net/npm/swagger-ui-dist/"
+
 
 
 config = Config()

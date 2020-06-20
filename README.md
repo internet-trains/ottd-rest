@@ -51,4 +51,4 @@ python3 -m flask run -p 5000
 ```
 ## Doc
 Doc is hosted at `http://localhost:5000/swagger-ui` or `http://localhost:5000/redoc` when the server 
-is running. `api.json` can also be used with other OpenAPI doc tools.
+is running. `api.json` can also be used with other OpenAPI doc toolpythos.

@@ -8,3 +8,6 @@ flask-smorest
 Flask-Migrate
 marshmallow-sqlalchemy
 psycopg2
+flask-cors
+python-dotenv
+flask-threads

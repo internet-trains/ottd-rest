@@ -1,5 +1,5 @@
 from datetime import datetime, date
-from app import db
+from app.extensions import db
 from app.models.company import Company
 
 

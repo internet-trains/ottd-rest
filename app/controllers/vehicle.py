@@ -1,7 +1,7 @@
-from datetime import date
+from datetime import date, datetime
 
 from app.models.vehicle import Vehicle
-from app import db
+from app.extensions import db
 
 
 class VehicleTimescaleController:
@@ -71,6 +71,12 @@ class VehicleController:
 
         method = mailbox["data"]["method"]
         if method in Vehicle.gs_map.keys():
+            if method == "GSVehicle.GetProfitLastYear":
+                if vehicle.profit_last_year != mailbox["result"]:
+                    # TODO: Use a better base for our year end addition
+                    last_year_ts = VehicleTimescaleController.gen_ts_item(vehicle, datetime(current_time.year-1, 12, 31, 23 , 59, 59))
+                    last_year_ts.profit_this_year = mailbox["result"]
+                    db.session.add(last_year_ts)
             setattr(vehicle, Vehicle.gs_map[method], mailbox["result"])
 
         vehicle.last_updated = current_time

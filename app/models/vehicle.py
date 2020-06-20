@@ -1,4 +1,6 @@
-from app import db
+from sqlalchemy.orm import relationship
+
+from app.extensions import db
 from app.models.timescale_mixin import TimeScaleMixin
 
 
@@ -36,9 +38,12 @@ class Vehicle(db.Model, TimeScaleMixin):
     reliability = db.Column(db.Float)
     maximum_order_distance = db.Column(db.Integer)
     last_updated = db.Column(db.Date)
+    company_id = db.Column(db.Integer, db.ForeignKey('company.id'))
+
+    company = relationship('Company')
 
     gs_map = {
-        # "GSVehicle.GetOwner": 'owner',
+        "GSVehicle.GetOwner": 'company_id',
         # "GSVehicle.GetLocation": 'location',
         # "GSVehicle.GetEngineType",
         # "GSVehicle.GetUnitNumber",

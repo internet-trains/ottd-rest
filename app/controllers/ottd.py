@@ -9,7 +9,7 @@ from libottdadmin2.packets.admin import (
 )
 
 from logging import warning
-from app import db
+from app.extensions import db
 from config import config
 from app.models.town import Town
 from app.models.vehicle import Vehicle
@@ -27,7 +27,7 @@ class Client(TrackingMixIn, OttdSocket):
         super().__init__(*args, **kwargs)
         self.mailbox = {}
         self.mailbox_iterator = 0
-        self.packets_to_send = []
+        self.packets_to_send = {}
 
     def get_mailbox(self):
         if self.mailbox_iterator >= 10000:
@@ -36,11 +36,23 @@ class Client(TrackingMixIn, OttdSocket):
         self.mailbox[self.mailbox_iterator] = {}
         return self.mailbox_iterator
 
-    def send_packets(self):
-        for packet in self.packets_to_send:
-            self.send_packet(packet)
+    def get_active_requests(self):
+        active_reqs = 0
+        for key, mailbox in self.mailbox.items():
+            active_reqs += 1 if mailbox['sent'] and 'result' not in mailbox else 0
 
-        self.packets_to_send = []
+        return active_reqs
+
+    def send_packets(self):
+        active_requests = self.get_active_requests()
+
+        requests_to_send  = min(10 - active_requests, len(self.packets_to_send))
+
+        mailboxes_to_send = list(self.packets_to_send.keys())[:requests_to_send]
+
+        for mb in mailboxes_to_send:
+            self.send_packet(self.packets_to_send.pop(mb))
+            self.mailbox[mb]['sent'] = True
 
     def on_server_gamescript_raw(self, packet, data):
         mailbox_id = data.json_data["number"]
@@ -57,8 +69,8 @@ class Client(TrackingMixIn, OttdSocket):
             data["company_mode"] = company_mode
 
         packet = AdminGamescript.create(json_data=data)
-        self.packets_to_send.append(packet)
-        self.mailbox[mailbox_id] = {"data": data}
+        self.packets_to_send[mailbox_id] = packet
+        self.mailbox[mailbox_id] = {"data": data, "sent": False}
         return mailbox_id
 
 
@@ -88,8 +100,6 @@ class OpenTTDConnection:
         )
         self.client.send_packet(poll_packet)
         self.client.send_packets()
-
-        self.packets_to_send = []
 
     def sync_data(self):
         events = self.selector.select()
@@ -148,7 +158,7 @@ class OpenTTDConnection:
         towns_to_update = []
         trigger_new_city_scan_batch = False
 
-        for mb_id, mailbox in self.client.mailbox.items():
+        for mb_id, mailbox in list(self.client.mailbox.items()):
             if "db_synced" in mailbox:
                 if not mailbox["db_synced"]:
                     method = mailbox["data"]["method"]
@@ -236,3 +246,9 @@ class OpenTTDConnection:
             mailbox_ids += self.get_vehicle_details(vehicle.id)
 
         return mailbox_ids
+
+    def send_vehicle_to_depot(self, vehicle_id):
+        return self.client.send_admin_gamescript("GSVehicle.SendVehicleToDepot", args=[vehicle_id])
+
+    def send_vehicle_for_service(self, vehicle_id, company_id):
+        return self.client.send_admin_gamescript("GSVehicle.SendVehicleToDepotForServicing", args=[vehicle_id], company_mode=company_id)
