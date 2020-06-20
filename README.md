@@ -11,7 +11,7 @@ Stats are are also accessible via HTTP endpoints.
 * OpenTTD + OpenTTD Source for your installed version
 * [Latest version of ServerGS (from hg repo)](http://dev.openttdcoop.org/projects/gs-server/repository)
 * A Python 2.7 installation (for building ServerGS bindings)
-* A Python 3.7 installation (for running Quart Service)
+* A Python 3.7 installation (for running Flask Service)
 * _(optional) A Database_ ([supported](https://docs.sqlalchemy.org/en/13/dialects/))
 ### Building ServerGS Bindings
 * Edit `gen_api_binding.py`
