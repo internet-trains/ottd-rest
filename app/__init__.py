@@ -60,7 +60,6 @@ def init_app():
         global year_last_update
 
         with dataLock:
-            # Do your stuff with commonDataStruct Here
             ottd_connection.req_data()
             current_date = ottd_connection.sync_data()()
             if month_last_update != current_date.month:
