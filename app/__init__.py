@@ -118,7 +118,7 @@ def init_app():
     if sys.argv[0][-len(flask):] == flask and sys.argv[1] == "run":
         # Initiate
         start_connection_thread(app)
-        start_timescale_thread(app)
+        # start_timescale_thread(app)
         # When you kill Flask (SIGTERM), clear the trigger for the next thread
         atexit.register(interrupt)
 

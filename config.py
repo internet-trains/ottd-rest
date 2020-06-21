@@ -7,7 +7,6 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class Config(object):
-    # ...
     OTTD_GS_HOST = os.environ.get("OTTD_GS_HOST", "127.0.0.1")
     OTTD_GS_PORT = int(os.environ.get("OTTD_GS_PORT", NETWORK_ADMIN_PORT))
     OTTD_GS_PASSWORD = os.environ.get("OTTD_GS_PASSWORD", "password")
