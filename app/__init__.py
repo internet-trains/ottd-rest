@@ -95,7 +95,7 @@ def init_app():
             ottd_connection = OpenTTDConnection()
             # ottd_connection.scan_vehicles(20)
             info(f" [ Start Town Scan ]")
-            ottd_connection.schedule_next_town_scan_batch(947, 10)
+            # ottd_connection.schedule_next_town_scan_batch(947, 10)
             connection_thread.start()
 
     def start_timescale_thread(app):
@@ -123,11 +123,10 @@ def init_app():
     # Only run tasks if flask is being run.
     flask = "flask/__main__.py"
 
-    if sys.argv[0][-len(flask):] == flask and sys.argv[1] == "run":
-        if not Config.NO_WORKER:
-            start_connection_thread(app)
-            start_timescale_thread(app)
-        signal.signal(signal.SIGINT, interrupt)  # ctlr + c
+    if Config.WORKER:
+        start_connection_thread(app)
+        start_timescale_thread(app)
+    signal.signal(signal.SIGINT, interrupt)  # ctlr + c
 
     from app import routes, models
 
