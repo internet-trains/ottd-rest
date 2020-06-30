@@ -1,3 +1,5 @@
+import os
+import signal
 from time import sleep
 
 from flask import Flask
@@ -20,15 +22,16 @@ from flaskthreads import AppContextThread
 POOL_TIME = 1  # Seconds
 TIMESCALE_POOL_TIME = 1
 
-dataLock = threading.Lock()
 connection_thread = None
 timescale_updater_thread = None
 
 ottd_connection = None  # type: OpenTTDConnection
 current_date = None
-month_last_update = None
-year_last_update = None
+month_last_update = 1
+year_last_update = 1
 
+global shutting_down
+shutting_down = False
 
 def init_app():
     app = Flask(__name__)
@@ -45,11 +48,13 @@ def init_app():
     from app.controllers.vehicle import VehicleTimescaleController, VehicleController
     from app.controllers.town import TownController, TownTimescaleController
 
-    def interrupt():
-        global connection_thread
-        global timescale_updater_thread
-        connection_thread.cancel()
-        timescale_updater_thread.cancel()
+    def interrupt(signal_received, frame):
+        info("Shutting Down...")
+        global shutting_down
+        ottd_connection.disconnect()
+        shutting_down = True
+        sleep(2)
+        os.kill(os.getpid(), signal.SIGTERM)
 
     def do_connection_thread():
         sleep(1)
@@ -58,25 +63,27 @@ def init_app():
         global current_date
         global month_last_update
         global year_last_update
+        global shutting_down
 
-        with dataLock:
-            ottd_connection.req_data()
-            current_date = ottd_connection.sync_data()()
-            if month_last_update != current_date.month:
-                # Trigger Vehicle Sync
-                info(f" [ New Month {current_date.year}-{current_date.month} ]")
-                info(f" [ Requesting City Updates ] ")
-                # VehicleController.trigger_sync_tasks(ottd_connection)
-                ottd_connection.refresh_db_vehicles()
-                ottd_connection.refresh_db_towns()
-                month_last_update = current_date.month
-            if year_last_update != current_date.year:
-                info(f" [ New Year {current_date.year} ] ")
-                year_last_update = current_date.year
+        ottd_connection.req_data()
+        current_date = ottd_connection.sync_data()()
+        if month_last_update != current_date.month:
+            # Trigger Vehicle Sync
+            info(f" [ New Month {current_date.year}-{current_date.month} ]")
+            info(f" [ Requesting Vehicle Updates ] ")
+            ottd_connection.refresh_db_vehicles()
+            month_last_update = current_date.month
+        if year_last_update != current_date.year:
+            info(f" [ New Year {current_date.year} ] ")
+            info(f" [ Requesting City & Vehicle Updates ] ")
+            year_last_update = current_date.year
+            # ottd_connection.refresh_db_vehicles()
+            # ottd_connection.refresh_db_towns()
 
         # Set the next thread to happen
-        connection_thread = AppContextThread(target=do_connection_thread)
-        connection_thread.start()
+        if not shutting_down:
+            connection_thread = AppContextThread(target=do_connection_thread)
+            connection_thread.start()
 
     def start_connection_thread(app):
         # Do initialisation stuff here
@@ -88,7 +95,7 @@ def init_app():
             ottd_connection = OpenTTDConnection()
             # ottd_connection.scan_vehicles(20)
             info(f" [ Start Town Scan ]")
-            ottd_connection.schedule_next_town_scan_batch(0, 10)
+            ottd_connection.schedule_next_town_scan_batch(947, 10)
             connection_thread.start()
 
     def start_timescale_thread(app):
@@ -103,23 +110,24 @@ def init_app():
         sleep(1)
         global timescale_updater_thread
         global current_date
+        global shutting_down
         CompanyTimescaleController.capture_data(current_date)
         VehicleTimescaleController.capture_data(current_date)
         TownTimescaleController.capture_data(current_date)
-        timescale_updater_thread = AppContextThread(
-            target=do_timescale_thread
-        )
-        timescale_updater_thread.start()
+        if not shutting_down:
+            timescale_updater_thread = AppContextThread(
+                target=do_timescale_thread
+            )
+            timescale_updater_thread.start()
 
     # Only run tasks if flask is being run.
     flask = "flask/__main__.py"
 
     if sys.argv[0][-len(flask):] == flask and sys.argv[1] == "run":
-        # Initiate
-        start_connection_thread(app)
-        # start_timescale_thread(app)
-        # When you kill Flask (SIGTERM), clear the trigger for the next thread
-        atexit.register(interrupt)
+        if not Config.NO_WORKER:
+            start_connection_thread(app)
+            start_timescale_thread(app)
+        signal.signal(signal.SIGINT, interrupt)  # ctlr + c
 
     from app import routes, models
 

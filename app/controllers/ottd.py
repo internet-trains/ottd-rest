@@ -1,3 +1,5 @@
+import socket
+
 from libottdadmin2.client.tracking import TrackingMixIn
 from libottdadmin2.enums import UpdateType, UpdateFrequency
 from libottdadmin2.client.sync import OttdSocket, DefaultSelector
@@ -24,7 +26,7 @@ password = config.OTTD_GS_PASSWORD
 
 class Client(TrackingMixIn, OttdSocket):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super().__init__(user_agent="ottd-rest", version="0.1", *args, **kwargs)
         self.mailbox = {}
         self.mailbox_iterator = 0
         self.packets_to_send = {}
@@ -76,7 +78,7 @@ class Client(TrackingMixIn, OttdSocket):
 
 class OpenTTDConnection:
     def __init__(self):
-        self.client = Client(password=password)
+        self.client = Client(password=password, )
         self.client.connect((host, port))
         self.selector = DefaultSelector()
         self.client.setblocking(False)
@@ -199,6 +201,9 @@ class OpenTTDConnection:
 
     def add_packet(self, packet):
         self.packets_to_send.append(packet)
+
+    def close(self):
+        self.client.close()
 
     def get_mailbox(self, mailbox_id):
         return self.client.mailbox.get(mailbox_id, None)
