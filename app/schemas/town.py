@@ -9,10 +9,10 @@ class TownSchema(ma.SQLAlchemyAutoSchema):
         model = Town
 
 class TownGrowSchema(ma.Schema):
-    houses = fields.Int(description="Number of houses you wish to grow the town by.")
+    houses = fields.Int(description="Number of houses you wish to grow the town by.", required=True)
 
 class TownTextSchema(ma.Schema):
-    text = fields.Str(description="Name you wish to set the town text to.")
+    text = fields.Str(description="Name you wish to set the town text to.", required=True)
 
 class TownNameSchema(ma.Schema):
-    name = fields.Str(description="Name you wish to set the town's name to.")
+    name = fields.Str(description="Name you wish to set the town's name to.", required=True)
