@@ -68,7 +68,7 @@ class Client(TrackingMixIn, OttdSocket):
         mailbox_id = self.get_mailbox()
         data = {"action": action, "method": method, "args": args, "number": mailbox_id}
         if company_mode is not None:
-            data["company_mode"] = company_mode
+            data["companymode"] = company_mode
 
         packet = AdminGamescript.create(json_data=data)
         self.packets_to_send[mailbox_id] = packet
@@ -252,8 +252,21 @@ class OpenTTDConnection:
 
         return mailbox_ids
 
+    # Vehicle Methods
+
     def send_vehicle_to_depot(self, vehicle_id):
         return self.client.send_admin_gamescript("GSVehicle.SendVehicleToDepot", args=[vehicle_id])
 
     def send_vehicle_for_service(self, vehicle_id, company_id):
         return self.client.send_admin_gamescript("GSVehicle.SendVehicleToDepotForServicing", args=[vehicle_id], company_mode=company_id)
+
+    # Town Methods
+
+    def grow_town(self, town_id, houses):
+        return self.client.send_admin_gamescript("GSTown.ExpandTown", args=[town_id, houses])
+
+    def rename_town(self, town_id, name):
+        return self.client.send_admin_gamescript("GSTown.SetName", args=[town_id, f"'{name}'"])
+
+    def set_town_text(self, town_id, text):
+        return self.client.send_admin_gamescript("GSTown.SetText", args=[town_id, f"'{text}'"])

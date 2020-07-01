@@ -3,7 +3,8 @@ from http import HTTPStatus
 from flask_smorest import Blueprint
 from app.models.town import Town
 from app.models.timescale_mixin import TimeScaleRequestSchema
-from app.schemas.town import TownSchema
+from app.schemas.town import TownSchema, TownGrowSchema, TownNameSchema, TownTextSchema
+from app import ottd_connection
 
 town_routes = Blueprint(
     "Town", __name__, url_prefix="/town", description="Routes for getting town data."
@@ -31,6 +32,53 @@ def get_by_id(town_id):
     :return:
     """
     return Town.query.filter_by(id=town_id).first_or_404(), HTTPStatus.OK
+
+@town_routes.route("/<int:town_id>/grow", methods=["POST"])
+@town_routes.arguments(TownGrowSchema, location="query", as_kwargs=True)
+@town_routes.response(code=HTTPStatus.OK)
+def send_to_depot(town_id, **kwargs):
+    """
+    Grows a town by the specified number of houses
+    ---
+    :return:
+    """
+    town = Town.query.filter(Town.id == town_id).first_or_404()
+
+    mailbox = ottd_connection.grow_town(town_id, kwargs['houses'])
+
+    return {"status": True, "mailbox": mailbox}, HTTPStatus.OK
+
+
+@town_routes.route("/<int:town_id>/name", methods=["POST"])
+@town_routes.arguments(TownNameSchema, location="query", as_kwargs=True)
+@town_routes.response(code=HTTPStatus.OK)
+def send_to_depot(town_id, **kwargs):
+    """
+    Sets the name of a town.
+    ---
+    :return:
+    """
+    town = Town.query.filter(Town.id == town_id).first_or_404()
+
+    mailbox = ottd_connection.rename_town(town_id, kwargs['name'])
+
+    return {"status": True, "mailbox": mailbox}, HTTPStatus.OK
+
+
+@town_routes.route("/<int:town_id>/text", methods=["POST"])
+@town_routes.arguments(TownTextSchema, location="query", as_kwargs=True)
+@town_routes.response(code=HTTPStatus.OK)
+def send_to_depot(town_id, **kwargs):
+    """
+    Sets the town text.
+    ---
+    :return:
+    """
+    town = Town.query.filter(Town.id == town_id).first_or_404()
+
+    mailbox = ottd_connection.set_town_text(town_id, kwargs['text'])
+
+    return {"status": True, "mailbox": mailbox}, HTTPStatus.OK
 
 
 @town_routes.route("/timescale_data")
